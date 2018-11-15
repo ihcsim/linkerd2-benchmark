@@ -13,17 +13,17 @@ GRPC_PORT=${GRPC_PORT:-8079}
 DATA_DIR=${DATA_DIR:-/data}
 
 # Refer https://github.com/fortio/fortio/wiki/FAQ#i-want-to-get-the-best-results-what-flags-should-i-pass for tips on setting up the load tests.
-QUERIES_PER_SECOND_HTTP=${QUERIES_PER_SECOND_HTTP:-1000}
-QUERIES_PER_SECOND_GRPC=${QUERIES_PER_SECOND_GRPC:-1000}
-CONNECTIONS_COUNT=${CONNECTIONS_COUNT:-16}
-TEST_RUN_DURATION=${TEST_RUN_DURATION:-5s}
+QUERIES_PER_SECOND_HTTP=${QUERIES_PER_SECOND_HTTP:-100}
+QUERIES_PER_SECOND_GRPC=${QUERIES_PER_SECOND_GRPC:-100}
+CONNECTIONS_COUNT=${CONNECTIONS_COUNT:-4}
+TEST_RUN_DURATION=${TEST_RUN_DURATION:-10s}
 TEST_RUN_TOTAL=${TEST_RUN_TOTAL:-10}
 
 # Refer https://github.com/fortio/fortio/wiki/FAQ#my-histogram-graphs-are-blocky--not-many-data-points-
 HISTOGRAM_RESOLUTION=${HISTOGRAM_RESOLUTION:-0.0001}
 
 NAMESPACE_BENCHMARK_BASELINE=${NAMESPACE_BENCHMARK_BASELINE:-benchmark-baseline}
-NAMESPACE_BENCHMARK_LINKERD=${NAMESPACE_BENCHMARK_LINKERD:=-benchmark-meshed}
+NAMESPACE_BENCHMARK_LINKERD=${NAMESPACE_BENCHMARK_LINKERD:=-benchmark-linkerd}
 
 function usage() {
   echo -e "Support environment variables:\n  INIT - Install the latest version of Fortio\n  HTTP_PORT - HTTP port of the echo server to send the load to\n  GRPC_PORT - GRPC port of the echo server to send the load to\n  DATA_DIR - Data directory to write the result JSON files to\n  QUERIES_PER_SECOND_HTTP - Queries per second for the HTTP load\n  QUERIES_PER_SECOND_GRPC - Queries per second for the GRPC load\n  CONNECTIONS_COUNT - Number of connections/goroutine/threads used by the load generator container\n  TEST_RUN_DURATION - Duration of each test run (in golang duration format)\n  TEST_RUN_TOTAL - Number of times to repeat the test run. Each test run lasts for the duration defined by TEST_RUN_DURATION\n  HISTOGRAM_RESOLUTION - Resolution of the histogram lowest buckets in seconds (in golang float format)"
@@ -41,7 +41,7 @@ function run_test_http() {
     -c ${CONNECTIONS_COUNT} \
     -r ${HISTOGRAM_RESOLUTION} \
     -t ${TEST_RUN_DURATION} \
-    -labels "http ${CONTAINER} test-run-${TEST_RUN} ${QUERIES_PER_SECOND_HTTP} ${TEST_RUN_DURATION}" \
+    -labels "http ${MESHED} ${QUERIES_PER_SECOND_HTTP}qps ${TEST_RUN_DURATION} echo-${INDEX} ${TEST_RUN}" \
     -profile "${DATA_DIR}/profile" \
     ${CONTAINER}:${HTTP_PORT}/echo
 }
@@ -54,7 +54,7 @@ function run_test_grpc() {
     -c ${CONNECTIONS_COUNT} \
     -r ${HISTOGRAM_RESOLUTION} \
     -t ${TEST_RUN_DURATION} \
-    -labels "grpc ${CONTAINER} test-run-${TEST_RUN} ${QUERIES_PER_SECOND_GRPC} ${TEST_RUN_DURATION}" \
+    -labels "grpc ${MESHED} ${QUERIES_PER_SECOND_HTTP}qps ${TEST_RUN_DURATION} echo-${INDEX} ${TEST_RUN}" \
     -profile "${DATA_DIR}/profile" \
     ${CONTAINER}:${GRPC_PORT}
 }
@@ -71,10 +71,12 @@ fi
 
 for TEST_RUN in $(seq 0 $((TEST_RUN_TOTAL-1))); do
   for INDEX in $(seq 0 $((TARGETS_COUNT-1))); do
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} TEST_RUN=${TEST_RUN} run_test_http
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} TEST_RUN=${TEST_RUN} run_test_http
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} MESHED=baseline TEST_RUN=${TEST_RUN} run_test_http
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} MESHED=linkerd TEST_RUN=${TEST_RUN} run_test_http
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_ISTIO} MESHED=istio TEST_RUN=${TEST_RUN} run_test_http
 
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} TEST_RUN=${TEST_RUN} run_test_grpc
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} TEST_RUN=${TEST_RUN} run_test_grpc
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} MESHED=baseline TEST_RUN=${TEST_RUN} run_test_grpc
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} MESHED=linkerd TEST_RUN=${TEST_RUN} run_test_grpc
+    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_ISTIO} MESHED=istio TEST_RUN=${TEST_RUN} run_test_grpc
   done
 done

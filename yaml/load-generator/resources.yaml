@@ -46,6 +46,8 @@ spec:
           value: "{{ NAMESPACE_BENCHMARK_BASELINE }}"
         - name: NAMESPACE_BENCHMARK_LINKERD
           value: "{{ NAMESPACE_BENCHMARK_LINKERD }}"
+        - name: NAMESPACE_BENCHMARK_ISTIO
+          value: "{{ NAMESPACE_BENCHMARK_ISTIO }}"
         volumeMounts:
         - name: data
           mountPath: /data
