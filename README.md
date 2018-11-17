@@ -6,6 +6,8 @@ Fortio is used as both the load generator and the echo server because of its lig
 * [Minikube](#minikube)
 * [Docker](#docker)
 
+The report of a sample run can be found [here](reports/minikube/README.md).
+
 ## Minikube
 To run the minikube.sh script, you will need:
 
@@ -49,15 +51,7 @@ Once both Linkerd and Istio are ready, re-run the script as shown above to:
 * Run the load tests
 * Make the report available via the report server ingress
 
-To view the reports, visit `http://<your_minikube_ip>`
-
-For example,
-
-![Baseline Response Time](img/response_time_minikube_http_baseline.png)
-_The response time of 10 runs of the HTTP load test on the baseline pods_
-
-![Linkerd2 Response Time](img/response_time_minikube_http_linkerd2.png)
-_The response time of 10 runs of the HTTP load test on the Linkerd2-meshed pods_
+To view the reports, visit `http://<your_minikube_ip>`.
 
 The echo servers are accessible via their designated node ports, which can be obtained using the `kubectl -n <benchmark_namespace> get svc -o wide` command (i.e. `http://<your_minikube_ip>:<node_port>/fortio`). The server UI provides further insight into its internal PPROF.
 
