@@ -1,0 +1,126 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: load-generator-data
+  labels:
+    project: linkerd2-benchmark
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ PERSISTENT_DISK_SIZE }}
+
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: load-generator
+  labels:
+    project: linkerd2-benchmark
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        job: load-generator
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: load-generator
+        image: {{ DOCKER_IMAGE_REPO }}/load-generator
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TARGETS_COUNT
+          value: "{{ TARGETS_COUNT }}"
+        - name: QUERIES_PER_SECOND_HTTP
+          value: "{{ QUERIES_PER_SECOND_HTTP }}"
+        - name: QUERIES_PER_SECOND_GRPC
+          value: "{{ QUERIES_PER_SECOND_GRPC }}"
+        - name: CONNECTIONS_COUNT
+          value: "{{ CONNECTIONS_COUNT }}"
+        - name: HISTOGRAM_RESOLUTION
+          value: "{{ HISTOGRAM_RESOLUTION }}"
+        - name: TEST_RUN_DURATION
+          value: "{{ TEST_RUN_DURATION }}"
+        - name: TEST_RUN_TOTAL
+          value: "{{ TEST_RUN_TOTAL }}"
+        - name: NAMESPACE_BENCHMARK_BASELINE
+          value: "{{ NAMESPACE_BENCHMARK_BASELINE }}"
+        - name: NAMESPACE_BENCHMARK_LINKERD
+          value: "{{ NAMESPACE_BENCHMARK_LINKERD }}"
+        - name: NAMESPACE_BENCHMARK_ISTIO
+          value: "{{ NAMESPACE_BENCHMARK_ISTIO }}"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: load-generator-data
+      tolerations:
+      - key: app-family
+        value: load-generator
+        effect: NoSchedule
+
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: report-server
+  labels:
+    project: linkerd2-benchmark
+spec:
+  backend:
+    serviceName: report-server
+    servicePort: 8080
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: report-server
+  labels:
+    project: linkerd2-benchmark
+spec:
+  type: NodePort
+  selector:
+    app: report-server
+  ports:
+  - name: http
+    port: 8080
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: report-server
+  labels:
+    project: linkerd2-benchmark
+spec:
+  selector:
+    matchLabels:
+      app: report-server
+  template:
+    metadata:
+      labels:
+        app: report-server
+    spec:
+      containers:
+      - name: report
+        image: fortio/fortio:1.3.0
+        command: ["fortio", "report"]
+        args: ["-data-dir=/data"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
+          readOnly: true
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: load-generator-data
+      tolerations:
+      - key: app-family
+        value: load-generator
+        effect: NoSchedule
+

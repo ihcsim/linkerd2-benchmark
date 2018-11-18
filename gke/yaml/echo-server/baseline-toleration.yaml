@@ -1,0 +1,140 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: fortio-echo-0-data
+  labels:
+    project: linkerd2-benchmark
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: fortio-echo-0
+  labels:
+    project: linkerd2-benchmark
+spec:
+  selector:
+    app: fortio-echo-0
+  ports:
+  - name: http
+    port: 8080
+  - name: grpc
+    port: 8079
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: fortio-echo-0
+  labels:
+    project: linkerd2-benchmark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio-echo-0
+  template:
+    metadata:
+      labels:
+        app: fortio-echo-0
+    spec:
+      containers:
+      - name: fortio
+        image: fortio/fortio:1.3.0
+        command: ["fortio", "server"]
+        args:
+        - "-data-dir=/data"
+        - "-profile=/data/profile"
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8079
+          name: grpc
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: fortio-echo-0-data
+      tolerations:
+      - key: app-family
+        value: baseline
+        effect: NoSchedule
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: fortio-echo-1-data
+  labels:
+    project: linkerd2-benchmark
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: fortio-echo-1
+  labels:
+    project: linkerd2-benchmark
+spec:
+  selector:
+    app: fortio-echo-1
+  ports:
+  - name: http
+    port: 8080
+  - name: grpc
+    port: 8079
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: fortio-echo-1
+  labels:
+    project: linkerd2-benchmark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio-echo-1
+  template:
+    metadata:
+      labels:
+        app: fortio-echo-1
+    spec:
+      containers:
+      - name: fortio
+        image: fortio/fortio:1.3.0
+        command: ["fortio", "server"]
+        args:
+        - "-data-dir=/data"
+        - "-profile=/data/profile"
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8079
+          name: grpc
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: fortio-echo-1-data
+      tolerations:
+      - key: app-family
+        value: baseline
+        effect: NoSchedule

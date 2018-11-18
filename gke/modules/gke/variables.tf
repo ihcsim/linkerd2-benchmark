@@ -1,7 +1,10 @@
 variable "project" {}
 variable "zone" {}
 variable "gke_version" {}
-variable "gcp_user" {}
+
+variable "gcp_user" {
+  description = "Username of the identity used to run the gcloud command. As part of the Linkerd2 installation, this username will be assigned the cluster-admin cluster role."
+}
 
 variable "network" {}
 variable "subnetwork" {}
@@ -10,22 +13,20 @@ variable "service_account" {}
 variable "cluster_secondary_range_name" {}
 variable "services_secondary_range_name" {}
 
-variable "master_ipv4_cidr_block" {
-  default = "172.31.0.0/28"
-}
-
 variable "system_pool" {
   default = {
     name = "system"
-    initial_node_size = "6"
-    machine_type = "n1-highcpu-2"
+    initial_node_count = "1"
+    machine_type = "n1-standard-2"
+    disk_size_gb = "20"
   }
 }
 
 variable "worker_pool" {
   default = {
-    initial_node_size = "1"
-    machine_type = "n1-highcpu-2"
+    initial_node_count = "1"
+    machine_type = "n1-standard-1"
+    disk_size_gb = "10"
   }
 }
 
@@ -34,10 +35,6 @@ variable "node_auto_repair" {
 }
 variable "node_auto_upgrade" {
   default = "false"
-}
-
-variable "disk_size_gb" {
-  default = "8"
 }
 
 variable "disk_type" {

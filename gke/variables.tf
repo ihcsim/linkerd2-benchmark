@@ -14,5 +14,5 @@ variable "gke_zone" {
 }
 
 variable "gke_version" {
-  default = "1.10.7-gke.6"
+  default = "1.11.2-gke.18"
 }

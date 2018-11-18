@@ -1,5 +1,11 @@
 provider "google" {
-  version = "~>1.17"
+  version = "~>1.19"
+  project = "${var.project}"
+  region = "${var.region}"
+}
+
+provider "google-beta" {
+  version = "~>1.19"
   project = "${var.project}"
   region = "${var.region}"
 }
@@ -37,12 +43,3 @@ module "k8s" {
   cluster_secondary_range_name = "${module.network.cluster_secondary_range_name}"
   services_secondary_range_name = "${module.network.services_secondary_range_name}"
 }
-
-#module "dns" {
-  #source = "./modules/dns"
-
-  #zone = "${var.gke_zone}"
-  #cluster_name = "${module.k8s.cluster_name}"
-  #cluster_identifier = "${module.k8s.cluster_identifier}"
-  #external_dns_version = "${var.external_dns_version}"
-#}

@@ -6,8 +6,6 @@ resource "google_container_cluster" "main" {
   min_master_version = "${var.gke_version}"
   node_version = "${var.gke_version}"
 
-  master_ipv4_cidr_block = "${var.master_ipv4_cidr_block}"
-
   network = "${var.network}"
   subnetwork = "${var.subnetwork}"
 
@@ -32,7 +30,7 @@ resource "google_container_cluster" "main" {
 
     node_config {
       machine_type = "${var.system_pool["machine_type"]}"
-      disk_size_gb = "${var.disk_size_gb}"
+      disk_size_gb = "${var.system_pool["disk_size_gb"]}"
       disk_type = "${var.disk_type}"
       image_type = "${var.image_type}"
       oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
@@ -60,31 +58,67 @@ resource "google_container_cluster" "main" {
   }
 }
 
-resource "google_container_node_pool" "linkerd_meshed" {
-  name = "linkerd_meshed"
+resource "google_container_node_pool" "baseline" {
+  provider = "google-beta"
+
+  name = "baseline"
   cluster = "${google_container_cluster.main.name}"
   zone = "${var.zone}"
 
-  initial_node_count = "${var.worker_pool["initial_node_size"]}"
+  initial_node_count = "${var.worker_pool["initial_node_count"]}"
 
   node_config {
     preemptible = true
-    machine_type = "${var.system_pool["machine_type"]}"
-    disk_size_gb = "${var.disk_size_gb}"
+    machine_type = "${var.worker_pool["machine_type"]}"
+    disk_size_gb = "${var.worker_pool["disk_size_gb"]}"
     disk_type = "${var.disk_type}"
     image_type = "${var.image_type}"
     oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
     service_account = "${var.service_account}"
 
-    # reserve for 'reserved' pods
-    taint {
-      key = "reserved"
-      value = "true"
-      effect = "NO_SCHEDULE"
+    labels = {
+      node_group = "baseline"
     }
 
+    taint = {
+      key = "app-family"
+      value = "baseline"
+      effect = "NO_SCHEDULE"
+    }
+  }
+
+  management {
+    auto_repair = "${var.node_auto_repair}"
+    auto_upgrade = "${var.node_auto_upgrade}"
+  }
+}
+
+resource "google_container_node_pool" "linkerd_meshed" {
+  provider = "google-beta"
+
+  name = "linkerd-meshed"
+  cluster = "${google_container_cluster.main.name}"
+  zone = "${var.zone}"
+
+  initial_node_count = "${var.worker_pool["initial_node_count"]}"
+
+  node_config {
+    preemptible = true
+    machine_type = "${var.worker_pool["machine_type"]}"
+    disk_size_gb = "${var.worker_pool["disk_size_gb"]}"
+    disk_type = "${var.disk_type}"
+    image_type = "${var.image_type}"
+    oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
+    service_account = "${var.service_account}"
+
     labels = {
-      node_group = "linkerd_meshed"
+      node_group = "linkerd-meshed"
+    }
+
+    taint = {
+      key = "app-family"
+      value = "linkerd-meshed"
+      effect = "NO_SCHEDULE"
     }
   }
 
@@ -95,23 +129,31 @@ resource "google_container_node_pool" "linkerd_meshed" {
 }
 
 resource "google_container_node_pool" "istio_meshed" {
-  name = "istio_meshed"
+  provider = "google-beta"
+
+  name = "istio-meshed"
   cluster = "${google_container_cluster.main.name}"
   zone = "${var.zone}"
 
-  initial_node_count = "${var.worker_pool["initial_node_size"]}"
+  initial_node_count = "${var.worker_pool["initial_node_count"]}"
 
   node_config {
     preemptible = true
     machine_type = "${var.worker_pool["machine_type"]}"
-    disk_size_gb = "${var.disk_size_gb}"
+    disk_size_gb = "${var.worker_pool["disk_size_gb"]}"
     disk_type = "${var.disk_type}"
     image_type = "${var.image_type}"
     oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
     service_account = "${var.service_account}"
 
     labels = {
-      node_group = "istio_meshed"
+      node_group = "istio-meshed"
+    }
+
+    taint = {
+      key = "app-family"
+      value = "istio-meshed"
+      effect = "NO_SCHEDULE"
     }
   }
 
@@ -122,22 +164,30 @@ resource "google_container_node_pool" "istio_meshed" {
 }
 
 resource "google_container_node_pool" "load_generator" {
-  name = "load_generator"
+  provider = "google-beta"
+
+  name = "load-generator"
   cluster = "${google_container_cluster.main.name}"
   zone = "${var.zone}"
 
-  initial_node_count = "${var.worker_pool["initial_node_size"]}"
+  initial_node_count = "${var.worker_pool["initial_node_count"]}"
 
   node_config {
     machine_type = "${var.worker_pool["machine_type"]}"
-    disk_size_gb = "${var.disk_size_gb}"
+    disk_size_gb = "${var.worker_pool["disk_size_gb"]}"
     disk_type = "${var.disk_type}"
     image_type = "${var.image_type}"
     oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
     service_account = "${var.service_account}"
 
     labels = {
-      node_group = "load_generator"
+      node_group = "load-generator"
+    }
+
+    taint = {
+      key = "app-family"
+      value = "load-generator"
+      effect = "NO_SCHEDULE"
     }
   }
 
@@ -156,21 +206,25 @@ resource "null_resource" "kubeconfig" {
 
   provisioner "local-exec" {
     command = <<EOT
+      #!/bin/sh
       set -e
 
       max_retries=20
       try=0
       while : ; do
-        status=`gcloud container clusters describe ${google_container_cluster.main.name} --format="value(status)"`
-        [[ "$${status}" != "RUNNING" && $${try} -lt $${max_retries} ]] || break
+        status=`gcloud container clusters describe --zone ${var.zone} ${google_container_cluster.main.name} --format="value(status)"`
+        if [ "$${status}" = "RUNNING" -o $${try} -gt $${max_retries} ]; then
+          break
+        fi
+
         echo "cluster ${google_container_cluster.main.name} not ready. retrying $${try}/$${max_retries}"
         try=$$((try+1))
         sleep 3
       done
 
-      gcloud container clusters get-credentials ${google_container_cluster.main.name} --zone ${var.zone}
+      gcloud container clusters get-credentials --zone ${var.zone} ${google_container_cluster.main.name} --zone ${var.zone}
       kubectl cluster-info
-      kubectl create clusterrolebinding ${var.service_account} --clusterrole=cluster-admin --user=${var.gcp_user}
+      kubectl create clusterrolebinding ${var.gcp_user} --clusterrole=cluster-admin --user=${var.gcp_user}
     EOT
   }
 }

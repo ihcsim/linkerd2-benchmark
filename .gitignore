@@ -1,2 +1,5 @@
 *.swp
 reports/docker.sh/*.json
+.terraform
+.secrets
+terraform.tfvars
