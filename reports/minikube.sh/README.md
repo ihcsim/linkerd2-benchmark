@@ -1,11 +1,12 @@
 # Report
-This report contains the result of my load tests in a Minikube set-up. The report logs can be found [here](report.log).
+This report contains the summarized result of my load tests in a Minikube set-up. The report logs can be found [here](report.log).
 
 ## Environment Set-up
 The [script](../../minikube.sh) used in this experiment runs Istio 1.0.3, Linkerd2 edge-18.11.1 and Fortio 1.3.1 on a Minikube (v0.30.0) instance of 4 CPUs and 8096 RAM of memory, per resource recommendation from the [Istio documentation](https://istio.io/docs/setup/kubernetes/platform-setup/minikube/). The Istio control plane is installed based on the recommended Helm-based production installation instructions found [here](https://istio.io/docs/setup/kubernetes/helm-install/).
 
 During each test run, the Fortio load generator sends two loads of requests at a rate of 100 queries/second to the Fortio echo servers, for a total of 10 seconds. (IOW, each load consists of 1000 queries over a 10 seconds duration.) The first load consists of HTTP requests, and the second load is comprised of GRPC requests. A total of 10 test runs are performed on the baseline, Linkerd2-meshed and Istio-meshed echo servers.
 
+## Results
 The following are the response time and resource utilization reports (click to enlarge images):
 
 * The vertical axis represents a single test run of 100 qps over a period of 10 seconds.
