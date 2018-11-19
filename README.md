@@ -52,20 +52,13 @@ $ CMD=CLEANUP GOOGLE_CREDENTIALS=<path_to_service_account_json_key_file> GCP_PRO
 
 The Terraform scripts create a GKE 1.11.2-gke.18 cluster in the us-west1-a zone. The cluster is comprised of the following node pools:
 
-* `system`: A single node of `n1-standard-2` type to host the `kube-system`, `linkerd` and `istio-system` namespaces.
-* `baseline`: A single node of `n1-standard-1` type to host the baseline echo servers. The node is tainted with the `app-family: baseline` taint.
-* `linkerd-meshed`: A single node of `n1-standard-1` type to host the Linkerd2-meshed echo servers. The node is tainted with the `app-family: linkerd-meshed` taint.
-* `istio-meshed`: A single node of `n1-standard-1` type to host the Istio-meshed echo servers. The node is tainted with the `app-family: istio-meshed` taint.
-* `load-generator`: A single node of `n1-standard-1` type to host the load generator. The node is tainted with the `app-family: load-generator` taint.
-
-Once the GKE cluster is ready, the script creates the following 6 namespaces:
-
-* `linkerd`: This namespace has the Linkerd2 control plane.
-* `istio-system`: This namespace has the Istio control plane. It's installed using the helm chart generated per instructions [here](https://istio.io/docs/setup/kubernetes/helm-install/).
-* `benchmark-load`: This namespace has the load generator and report server.
-* `benchmark-linkerd`: This namespace has 2 Fortio echo server pods that are meshed with the Linkerd2 proxy.
-* `benchmark-istio`: This namespace has 2 Fortio echo server pods that are meshed with the Istio proxy.
-* `benchmark-baseline`: This namespace has the 2 baseline deployments.
+Node Pool Name   | Machine Type  | k8s Namespace                            | Node Taint                   | # of Echo Servers
+---------------- | ------------- | ---------------------------------------- | ---------------------------- | -----------------
+`system`         | n1-standard-2 | `kube-system`, `linkerd`, `istio-system` | None                         | 0
+`baseline`       | n1-standard-1 | `benchmark-baseline`                     | `app-family: baseline`       | 2
+`linkerd-meshed` | n1-standard-1 | `benchmark-linkerd2`                     | `app-family: linkerd-meshed` | 2
+`istio-meshed`   | n1-standard-1 | `benchmark-istio`                        | `app-family: istio-meshed`   | 2
+`load-generator` | n1-standard-1 | `benchmark-laod`                         | `app-family: load-generator` | 2
 
 The report server is fronted by an ingress resource. Use the `kubectl -n benchmark-load get ing` command to get its public IPv4. The report will be viewable at `http://<ingress_public_ipv4>`.
 
