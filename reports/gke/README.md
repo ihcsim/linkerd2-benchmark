@@ -1,6 +1,8 @@
 # Report
 This report contains the summarized result of my load tests in a GKE environment. The report charts can be viewed at http://ld2.isim.me
 
+The report logs are available in the same folder as this README.
+
 ## Environment Set-up
 The [script](../../gke_stress.sh) used in this experiment runs Istio 1.0.3, Linkerd2 edge-18.11.1 and Fortio 1.3.1 on a GKE 1.11.2-gke.18 cluster. It stress-tests the Fortio echo servers by using the Fortio load genertor to repeatedly send HTTP and GRPC request loads to the baseline, Linkerd2-meshed and Istio-meshed echo servers.
 
