@@ -67,6 +67,8 @@ spec:
       - key: app-family
         value: linkerd-meshed
         effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-meshed
 
 ---
 kind: PersistentVolumeClaim
@@ -138,3 +140,5 @@ spec:
       - key: app-family
         value: linkerd-meshed
         effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-meshed
