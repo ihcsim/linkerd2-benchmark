@@ -52,13 +52,13 @@ $ CMD=CLEANUP GOOGLE_CREDENTIALS=<path_to_service_account_json_key_file> GCP_PRO
 
 The Terraform scripts create a GKE 1.11.2-gke.18 cluster in the us-west1-a zone. The cluster is comprised of the following node pools:
 
-Node Pool Name   | Machine Type  | k8s Namespace                            | Node Taint                   | # of Echo Servers
----------------- | ------------- | ---------------------------------------- | ---------------------------- | -----------------
-`system`         | n1-standard-2 | `kube-system`, `linkerd`, `istio-system` | None                         | 0
-`baseline`       | n1-standard-1 | `benchmark-baseline`                     | `app-family: baseline`       | 2
-`linkerd-meshed` | n1-standard-1 | `benchmark-linkerd2`                     | `app-family: linkerd-meshed` | 2
-`istio-meshed`   | n1-standard-1 | `benchmark-istio`                        | `app-family: istio-meshed`   | 2
-`load-generator` | n1-standard-1 | `benchmark-laod`                         | `app-family: load-generator` | 2
+Node Pool Name   | Machine Type                | k8s Namespace                            | Node Taint                   | # of Echo Servers
+---------------- | --------------------------- | ---------------------------------------- | ---------------------------- | -----------------
+`system`         | n1-standard-2               | `kube-system`, `linkerd`, `istio-system` | None                         | 0
+`baseline`       | n1-standard-1 (preemptible) | `benchmark-baseline`                     | `app-family: baseline`       | 2
+`linkerd-meshed` | n1-standard-1 (preemptible) | `benchmark-linkerd2`                     | `app-family: linkerd-meshed` | 2
+`istio-meshed`   | n1-standard-1 (preemptible) | `benchmark-istio`                        | `app-family: istio-meshed`   | 2
+`load-generator` | n1-standard-1               | `benchmark-lood`                         | `app-family: load-generator` | 2
 
 The report server is fronted by an ingress resource. Use the `kubectl -n benchmark-load get ing` command to get its public IPv4. The report will be viewable at `http://<ingress_public_ipv4>`.
 
