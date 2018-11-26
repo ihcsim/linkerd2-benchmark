@@ -29,7 +29,7 @@ spec:
       containers:
       - name: load-generator
         image: {{ DOCKER_IMAGE_REPO }}/load-generator
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: TARGETS_COUNT
           value: "{{ TARGETS_COUNT }}"

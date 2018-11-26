@@ -54,7 +54,7 @@ function run_test_grpc() {
     -c ${CONNECTIONS_COUNT} \
     -r ${HISTOGRAM_RESOLUTION} \
     -t ${TEST_RUN_DURATION} \
-    -labels "grpc ${MESHED} ${QUERIES_PER_SECOND_HTTP}qps ${TEST_RUN_DURATION} echo-${INDEX} ${TEST_RUN}" \
+    -labels "grpc ${MESHED} ${QUERIES_PER_SECOND_GRPC}qps ${TEST_RUN_DURATION} echo-${INDEX} ${TEST_RUN}" \
     -profile "${DATA_DIR}/profile" \
     ${CONTAINER}:${GRPC_PORT}
 }

@@ -27,6 +27,9 @@ Usage:
   # must update the Terraform Cloud Storage backend variables in gke/main.tf to match your environment
   CMD=INIT_CLUSTER GOOGLE_CREDENTIALS=<path_to_service_account_json_key_file> GCP_PROJECT=<gcp_project_id> GCP_USER=<username_to_run_gcloud> GKE_SERVICE_ACCOUNT=<gke_service_account_name> ./gke.sh
 
+  # build the load generator docker images
+  CMD=BUILD_LOAD_GENERATOR_DOCKER ./gke.sh
+
   # set up the Linkerd2 and Istio control planes
   CMD=INIT_CONTROL_PLANES ./gke.sh
 
@@ -100,9 +103,12 @@ case "${CMD}" in
     run_terraform
     ;;
 
-  INIT_CONTROL_PLANES)
+  BUILD_LOAD_GENERATOR_DOCKER)
     build_dockerfile
     push_docker_image
+    ;;
+
+  INIT_CONTROL_PLANES)
 
     cluster_readiness
     install_linkerd
