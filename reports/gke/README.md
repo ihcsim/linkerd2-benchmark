@@ -6,8 +6,8 @@ All the report logs are available in the same folder as this README.
 * [Environment Set-up](#environment-set-up)
 * [How To Read The Charts](#how-to-read-the-charts)
 * [Scenarios](#scenarios)
-  * [Scenario 1 - Maximum QPS](#scenario-1--maximum-qps)
-  * [Scenario 2 - Increasing Load](#scenario-2--increasing-load)
+  * [Scenario 1 - Maximum QPS](#scenario-1---maximum-qps)
+  * [Scenario 2 - Increasing Load](#scenario-2---increasing-load)
 
 ## Environment Set-up
 The scripts used in this experiment runs Istio 1.0.3, Linkerd2 edge-18.11.1 and Fortio 1.3.1 on a GKE 1.11.2-gke.18 cluster in the us-west1-a zone. They perform a series of  load tests by using the Fortio load generator to send HTTP and GRPC requests to the baseline, Linkerd2-meshed and Istio-meshed Fortio echo servers.
@@ -84,16 +84,16 @@ GRPC Istio-meshed    | http://ld2.isim.me/?s=grpc_istio_2113qps_5m    | Duration
 [GCP Stackdriver](https://cloud.google.com/stackdriver/) was used to capture the following memory and CPU usage data. Refer to the Stackdriver [docs](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-container) for definitions of _CPU usage_ and _memory usage_.
 
 ![ld2 proxy memory usage](charts/resource-usage/ld2-proxy-memory-usage.png)
-_Linkerd2 proxy memory usage_
+_Figure 1 - Linkerd2 proxy memory usage_
 
 ![istio proxy memory usage](charts/resource-usage/istio-proxy-memory-usage.png)
-_Istio proxy memory usage_
+_Figure 2 - Istio proxy memory usage_
 
 ![ld2 proxy cpu usage](charts/resource-usage/ld2-proxy-cpu-usage.png)
-_Linkerd2 proxy CPU usage_
+_Figure 3 - Linkerd2 proxy CPU usage_
 
 ![istio proxy cpu usage](charts/resource-usage/istio-proxy-cpu-usage.png)
-_Istio proxy CPU usage_
+_Figure 4 - Istio proxy CPU usage_
 
 ### Scenario 2 - Increasing Load
 In this scenario, the [gke_stress.sh script](../../gke_stress.sh) is used to generate a series of test runs, where subsequent run's qps rate is increased by 500 units. Each run is made up of a 10-second HTTP load and a 10-second GRPC load. The initial qps rate is 120 qps, with 4 concurrent connections. The next run has a qps rate of 500 qps. This increase in the qps rate continues until the final rate of 2000 qps.
