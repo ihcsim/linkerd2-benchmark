@@ -67,8 +67,7 @@ function create_linkerd_meshed() {
 function create_istio_meshed() {
   echo "Creating istio-meshed namespace"
   kubectl create ns ${NAMESPACE_BENCHMARK_ISTIO}
-  kubectl label ns ${NAMESPACE_BENCHMARK_ISTIO} istio-injection=enabled
-  kubectl -n ${NAMESPACE_BENCHMARK_ISTIO} apply -f ${RESOURCE_FILE_ECHO_SERVER_ISTIO}
+  istioctl kube-inject -f ${RESOURCE_FILE_ECHO_SERVER_ISTIO} | kubectl -n ${NAMESPACE_BENCHMARK_ISTIO} apply -f -
 }
 
 function run_tests() {
