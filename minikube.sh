@@ -6,6 +6,7 @@ DOCKER_IMAGE_REPO=minikube
 LOAD_GENERATOR_DOCKERFILE=minikube/yaml/load-generator
 
 RESOURCE_FILE_ISTIO=minikube/yaml/istio-1.0.3.yaml
+RESOURCE_FILE_LINKERD=minikube/yaml/linkerd-2.1.0.yaml
 RESOURCE_FILE_ECHO_SERVER_BASELINE=minikube/yaml/echo-server.yaml
 RESOURCE_FILE_ECHO_SERVER_LINKERD=minikube/yaml/echo-server.yaml
 RESOURCE_FILE_ECHO_SERVER_ISTIO=minikube/yaml/echo-server.yaml

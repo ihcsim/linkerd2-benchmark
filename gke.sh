@@ -14,6 +14,7 @@ DOCKER_IMAGE_REPO=us.gcr.io/linkerd2-benchmark
 LOAD_GENERATOR_DOCKERFILE=${PROJECT_FOLDER}/yaml/load-generator
 
 RESOURCE_FILE_ISTIO=${PROJECT_FOLDER}/yaml/istio-1.0.3.yaml
+RESOURCE_FILE_LINKERD=${PROJECT_FOLDER}/yaml/linkerd-2.1.0.yaml
 RESOURCE_FILE_ECHO_SERVER_BASELINE=${PROJECT_FOLDER}/yaml/echo-server/baseline-toleration.yaml
 RESOURCE_FILE_ECHO_SERVER_LINKERD=${PROJECT_FOLDER}/yaml/echo-server/linkerd-toleration.yaml
 RESOURCE_FILE_ECHO_SERVER_ISTIO=${PROJECT_FOLDER}/yaml/echo-server/istio-toleration.yaml

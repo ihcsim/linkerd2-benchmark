@@ -43,7 +43,7 @@ function cluster_readiness() {
 
 function install_linkerd() {
   echo "Installing Linkerd"
-  linkerd install | kubectl apply -f -
+  kubectl apply -f ${RESOURCE_FILE_LINKERD}
 }
 
 function install_istio() {
