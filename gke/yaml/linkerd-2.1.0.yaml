@@ -281,6 +281,12 @@ spec:
           privileged: false
         terminationMessagePolicy: FallbackToLogsOnError
       serviceAccount: linkerd-controller
+      tolerations:
+      - key: app-family
+        value: linkerd-system
+        effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-system
 status: {}
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
@@ -437,6 +443,12 @@ spec:
             - NET_ADMIN
           privileged: false
         terminationMessagePolicy: FallbackToLogsOnError
+      tolerations:
+      - key: app-family
+        value: linkerd-system
+        effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-system
 status: {}
 ---
 kind: Service
@@ -579,6 +591,12 @@ spec:
       - configMap:
           name: linkerd-prometheus-config
         name: prometheus-config
+      tolerations:
+      - key: app-family
+        value: linkerd-system
+        effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-system
 status: {}
 ---
 kind: ConfigMap
@@ -806,6 +824,12 @@ spec:
             path: provisioning/dashboards/dashboards.yaml
           name: linkerd-grafana-config
         name: grafana-config
+      tolerations:
+      - key: app-family
+        value: linkerd-system
+        effect: NoSchedule
+      nodeSelector:
+        cloud.google.com/gke-nodepool: linkerd-system
 status: {}
 ---
 kind: ConfigMap

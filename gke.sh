@@ -9,11 +9,12 @@ CLUSTER_NAME=${CLUSTER_NAME:-main}
 CLUSTER_ZONE=${CLUSTER_ZONE:-us-west1-a}
 GCP_PROJECT=${GCP_PROJECT:-linkerd2-benchmark}
 
-DOCKER_IMAGE_REPO=us.gcr.io/linkerd2-benchmark
+DOCKER_IMAGE_REPO=${DOCKER_IMAGE_REPO:-us.gcr.io/linkerd2-benchmark}
 
 LOAD_GENERATOR_DOCKERFILE=${PROJECT_FOLDER}/yaml/load-generator
 
 RESOURCE_FILE_ISTIO=${PROJECT_FOLDER}/yaml/istio-1.0.3.yaml
+RESOURCE_FILE_ISTIO_STRESS_TEST=${PROJECT_FOLDER}/yaml/istio-1.0.3-stress-test-mode.yaml
 RESOURCE_FILE_LINKERD=${PROJECT_FOLDER}/yaml/linkerd-2.1.0.yaml
 RESOURCE_FILE_ECHO_SERVER_BASELINE=${PROJECT_FOLDER}/yaml/echo-server/baseline-toleration.yaml
 RESOURCE_FILE_ECHO_SERVER_LINKERD=${PROJECT_FOLDER}/yaml/echo-server/linkerd-toleration.yaml
@@ -31,7 +32,8 @@ Usage:
   # build the load generator docker images
   CMD=BUILD_LOAD_GENERATOR_DOCKER ./gke.sh
 
-  # set up the Linkerd2 and Istio control planes
+  # set up the Linkerd2 and Istio control planes.
+  # specify the ISTIO_STRESS_TEST_MODE=true variable to use the Istio stress-test YAML.
   CMD=INIT_CONTROL_PLANES ./gke.sh
 
   # set up the baseline, Linkerd2-meshed and Istio-meshed echo servers
@@ -78,18 +80,22 @@ function run_terraform() {
   terraform validate \
     -var gcp_user=${GCP_USER} \
     -var gke_service_account="${GKE_SERVICE_ACCOUNT}" \
+    -var project="${GCP_PROJECT}" \
     ${PROJECT_FOLDER}
 
   terraform apply \
     -var gcp_user=${GCP_USER} \
     -var gke_service_account="${GKE_SERVICE_ACCOUNT}" \
+    -var project="${GCP_PROJECT}" \
     ${PROJECT_FOLDER}
 }
 
 function cleanup() {
+  echo "$GCP_PROJECT"
   terraform destroy \
     -var gcp_user=${GCP_USER} \
     -var gke_service_account="${GKE_SERVICE_ACCOUNT}" \
+    -var project="${GCP_PROJECT}" \
     ${PROJECT_FOLDER}
 }
 
@@ -113,7 +119,12 @@ case "${CMD}" in
 
     cluster_readiness
     install_linkerd
-    install_istio
+
+    if [ ! -z "${ISTIO_STRESS_TEST_MODE}" ]; then
+      install_istio_stress_test_mode
+    else
+      install_istio
+    fi
     ;;
 
   INIT_ECHO_SERVERS)

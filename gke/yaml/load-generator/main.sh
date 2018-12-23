@@ -5,7 +5,6 @@
 # All JSON reports are written to the /data folder by default.
 # Use the -h or --help option to see usage information.
 
-TARGETS_COUNT=${TARGET_COUNT:-2}
 TARGET_HOST=${TARGET_HOST:-fortio-echo}
 HTTP_PORT=${HTTP_PORT:-8080}
 GRPC_PORT=${GRPC_PORT:-8079}
@@ -69,13 +68,6 @@ if [ ! -z ${INIT} ]; then
 fi
 
 for TEST_RUN in $(seq 0 $((TEST_RUN_TOTAL-1))); do
-  for INDEX in $(seq 0 $((TARGETS_COUNT-1))); do
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} MESHED=baseline TEST_RUN=${TEST_RUN} run_test_http
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} MESHED=linkerd TEST_RUN=${TEST_RUN} run_test_http
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_ISTIO} MESHED=istio TEST_RUN=${TEST_RUN} run_test_http
-
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_BASELINE} MESHED=baseline TEST_RUN=${TEST_RUN} run_test_grpc
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_LINKERD} MESHED=linkerd TEST_RUN=${TEST_RUN} run_test_grpc
-    CONTAINER=${TARGET_HOST}-${INDEX}.${NAMESPACE_BENCHMARK_ISTIO} MESHED=istio TEST_RUN=${TEST_RUN} run_test_grpc
-  done
+  CONTAINER=${TARGET_HOST}-0.${NAMESPACE_BENCHMARK_BASELINE} MESHED=baseline TEST_RUN=${TEST_RUN} run_test_http
+  CONTAINER=${TARGET_HOST}-0.${NAMESPACE_BENCHMARK_ISTIO} MESHED=istio TEST_RUN=${TEST_RUN} run_test_http
 done

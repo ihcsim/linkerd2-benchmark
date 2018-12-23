@@ -1,5 +1,5 @@
 # Report
-This report contains the result of my performance test in a GKE environment. The report charts can be viewed at http://ld2.isim.me
+This report contains the result of my performance test in a GKE environment. The report charts can be viewed at https://ld2.isim.me
 
 All the report logs are available in the same folder as this README.
 
@@ -26,7 +26,7 @@ Node Pool Name   | Machine Type                | k8s Namespace                  
 The Istio control plane is installed based on the recommended Helm-based production installation instructions found [here](https://istio.io/docs/setup/kubernetes/helm-install/).
 
 ## How To Read The Charts
-Navigate to http://ld2.isim.me
+Navigate to https://ld2.isim.me
 
 * To view the histogram of a single test run, select its label from the list.
 * To compare the results of multiple test runs, hold down your SHIFT key while selecting their labels.

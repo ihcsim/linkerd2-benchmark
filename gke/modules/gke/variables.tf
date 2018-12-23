@@ -13,11 +13,19 @@ variable "service_account" {}
 variable "cluster_secondary_range_name" {}
 variable "services_secondary_range_name" {}
 
-variable "system_pool" {
+variable "kube_system_pool" {
   default = {
-    name = "system"
+    name = "kube-system"
     initial_node_count = "1"
     machine_type = "n1-standard-2"
+    disk_size_gb = "20"
+  }
+}
+
+variable "system_pool" {
+  default = {
+    initial_node_count = "1"
+    machine_type = "n1-highcpu-4"
     disk_size_gb = "20"
   }
 }

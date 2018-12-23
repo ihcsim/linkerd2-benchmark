@@ -25,19 +25,19 @@ resource "google_container_cluster" "main" {
   }
 
   node_pool = [{
-    name = "${var.system_pool["name"]}"
-    initial_node_count = "${var.system_pool["initial_node_count"]}"
+    name = "${var.kube_system_pool["name"]}"
+    initial_node_count = "${var.kube_system_pool["initial_node_count"]}"
 
     node_config {
-      machine_type = "${var.system_pool["machine_type"]}"
-      disk_size_gb = "${var.system_pool["disk_size_gb"]}"
+      machine_type = "${var.kube_system_pool["machine_type"]}"
+      disk_size_gb = "${var.kube_system_pool["disk_size_gb"]}"
       disk_type = "${var.disk_type}"
       image_type = "${var.image_type}"
       oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
       service_account = "${var.service_account}"
 
       labels = {
-        node_group = "${var.system_pool["name"]}"
+        node_group = "${var.kube_system_pool["name"]}"
       }
     }
 
@@ -55,6 +55,75 @@ resource "google_container_cluster" "main" {
     daily_maintenance_window {
       start_time = "02:00"
     }
+  }
+}
+
+resource "google_container_node_pool" "linkerd-system" {
+  provider = "google-beta"
+
+  name = "linkerd-system"
+  cluster = "${google_container_cluster.main.name}"
+  zone = "${var.zone}"
+
+  initial_node_count = "${var.system_pool["initial_node_count"]}"
+
+  node_config {
+    machine_type = "${var.system_pool["machine_type"]}"
+    disk_size_gb = "${var.system_pool["disk_size_gb"]}"
+    disk_type = "${var.disk_type}"
+    image_type = "${var.image_type}"
+    oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
+    service_account = "${var.service_account}"
+
+    labels = {
+      node_group = "linkerd-system"
+    }
+
+    taint = {
+      key = "app-family"
+      value = "linkerd-system"
+      effect = "NO_SCHEDULE"
+    }
+  }
+
+  management {
+    auto_repair = "${var.node_auto_repair}"
+    auto_upgrade = "${var.node_auto_upgrade}"
+  }
+}
+
+resource "google_container_node_pool" "istio-system" {
+  provider = "google-beta"
+
+  name = "istio-system"
+
+  cluster = "${google_container_cluster.main.name}"
+  zone = "${var.zone}"
+
+  initial_node_count = "${var.system_pool["initial_node_count"]}"
+
+  node_config {
+    machine_type = "${var.system_pool["machine_type"]}"
+    disk_size_gb = "${var.system_pool["disk_size_gb"]}"
+    disk_type = "${var.disk_type}"
+    image_type = "${var.image_type}"
+    oauth_scopes = ["compute-rw", "storage-ro", "logging-write", "monitoring"]
+    service_account = "${var.service_account}"
+
+    labels = {
+      node_group = "istio-system"
+    }
+
+    taint = {
+      key = "app-family"
+      value = "istio-system"
+      effect = "NO_SCHEDULE"
+    }
+  }
+
+  management {
+    auto_repair = "${var.node_auto_repair}"
+    auto_upgrade = "${var.node_auto_upgrade}"
   }
 }
 
@@ -209,6 +278,7 @@ resource "null_resource" "kubeconfig" {
       #!/bin/sh
       set -e
 
+      gcloud config set project ${var.project}
       max_retries=20
       try=0
       while : ; do
@@ -222,7 +292,7 @@ resource "null_resource" "kubeconfig" {
         sleep 3
       done
 
-      gcloud container clusters get-credentials --zone ${var.zone} ${google_container_cluster.main.name} --zone ${var.zone}
+      gcloud container clusters get-credentials ${google_container_cluster.main.name} --zone ${var.zone}
       kubectl cluster-info
       kubectl create clusterrolebinding ${var.gcp_user} --clusterrole=cluster-admin --user=${var.gcp_user}
     EOT

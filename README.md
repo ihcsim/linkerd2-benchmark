@@ -7,6 +7,8 @@ Fortio is used as both the load generator and the echo server because of its lig
 * [Minikube](#minikube)
 * [Docker](#docker)
 
+Blog post: https://medium.com/@ihcsim/linkerd-2-0-and-istio-performance-benchmark-df290101c2bb
+
 All the reports can be found in the [reports folder](reports).
 
 ## GKE

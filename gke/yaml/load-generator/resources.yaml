@@ -31,8 +31,6 @@ spec:
         image: {{ DOCKER_IMAGE_REPO }}/load-generator
         imagePullPolicy: Always
         env:
-        - name: TARGETS_COUNT
-          value: "{{ TARGETS_COUNT }}"
         - name: QUERIES_PER_SECOND_HTTP
           value: "{{ QUERIES_PER_SECOND_HTTP }}"
         - name: QUERIES_PER_SECOND_GRPC
